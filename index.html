@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mermaid Diagram Generator</title>
-  <!-- Mermaidライブラリの読み込み（バージョン指定） -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"></script>
+  <!-- Mermaidライブラリの読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     textarea { width: 100%; height: 150px; margin-bottom: 10px; font-family: monospace; }
@@ -33,20 +33,15 @@ graph TD
   <div id="diagram"></div>
   
   <script>
-    // Mermaidの初期化（securityLevel: 'loose' を設定）
-    mermaid.initialize({
-      startOnLoad: false,
-      securityLevel: 'loose'
-    });
+    // Mermaidの初期化（startOnLoad:falseにして明示的レンダリング）
+    mermaid.initialize({ startOnLoad: false });
     
-    // Mermaidコードを読み込み、.mermaid 要素としてコンテナに挿入し、mermaid.init でレンダリングする関数
+    // MermaidコードからSVGを生成して表示する関数
     function renderDiagram() {
       const input = document.getElementById('mermaidInput').value;
-      const container = document.getElementById('diagram');
-      // 以前のグラフをクリアし、.mermaidクラスのdivにコードをセット
-      container.innerHTML = '<div class="mermaid">' + input + '</div>';
-      // mermaid.init を使ってレンダリング
-      mermaid.init(undefined, container);
+      mermaid.mermaidAPI.render('generatedDiagram', input, function(svgCode) {
+        document.getElementById('diagram').innerHTML = svgCode;
+      });
     }
     
     // イベントリスナーの登録
@@ -54,19 +49,19 @@ graph TD
     
     // SVGダウンロード機能
     function downloadSVG() {
-      const container = document.getElementById('diagram');
-      const svgElement = container.querySelector('svg');
+      const diagramDiv = document.getElementById('diagram');
+      const svgElement = diagramDiv.querySelector('svg');
       if (!svgElement) {
         alert("グラフが生成されていません。");
         return;
       }
       const serializer = new XMLSerializer();
       let source = serializer.serializeToString(svgElement);
-      // 必要な名前空間の追加
-      if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+      // 名前空間の追加
+      if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
         source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
       }
-      if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+      if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
         source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
       }
       source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
@@ -81,26 +76,29 @@ graph TD
     
     // PNGダウンロード機能
     function downloadPNG() {
-      const container = document.getElementById('diagram');
-      const svgElement = container.querySelector('svg');
+      const diagramDiv = document.getElementById('diagram');
+      const svgElement = diagramDiv.querySelector('svg');
       if (!svgElement) {
         alert("グラフが生成されていません。");
         return;
       }
       const serializer = new XMLSerializer();
       let svgString = serializer.serializeToString(svgElement);
-      if (!svgString.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+      // 名前空間の追加
+      if(!svgString.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
         svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
       }
-      if (!svgString.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+      if(!svgString.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
         svgString = svgString.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
       }
       svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString;
       
+      // SVGデータをBlobに変換
       const svgBlob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
       const url = URL.createObjectURL(svgBlob);
       const img = new Image();
       img.onload = function() {
+        // 画像の実サイズに合わせてcanvasサイズを設定
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
@@ -122,11 +120,11 @@ graph TD
       img.src = url;
     }
     
-    // ダウンロードボタンのイベント登録
+    // 各ダウンロードボタンにイベントを登録
     document.getElementById('downloadSVGBtn').addEventListener('click', downloadSVG);
     document.getElementById('downloadPNGBtn').addEventListener('click', downloadPNG);
     
-    // 初期レンダリング
+    // 初期レンダリング（任意）
     renderDiagram();
   </script>
 </body>
