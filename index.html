@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mermaid Diagram Generator</title>
-  <!-- Mermaidライブラリの読み込み -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <!-- バージョン指定したMermaidライブラリの読み込み例 -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     textarea { width: 100%; height: 150px; margin-bottom: 10px; font-family: monospace; }
@@ -33,8 +33,11 @@ graph TD
   <div id="diagram"></div>
   
   <script>
-    // Mermaidの初期化（startOnLoad:falseにして明示的レンダリング）
-    mermaid.initialize({ startOnLoad: false });
+    // Mermaidの初期化（securityLevel: 'loose'を追加）
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'loose'
+    });
     
     // MermaidコードからSVGを生成して表示する関数
     function renderDiagram() {
@@ -58,10 +61,10 @@ graph TD
       const serializer = new XMLSerializer();
       let source = serializer.serializeToString(svgElement);
       // 名前空間の追加
-      if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+      if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
         source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
       }
-      if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+      if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
         source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
       }
       source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
@@ -85,10 +88,10 @@ graph TD
       const serializer = new XMLSerializer();
       let svgString = serializer.serializeToString(svgElement);
       // 名前空間の追加
-      if(!svgString.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+      if (!svgString.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
         svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
       }
-      if(!svgString.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+      if (!svgString.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
         svgString = svgString.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
       }
       svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString;
@@ -98,7 +101,6 @@ graph TD
       const url = URL.createObjectURL(svgBlob);
       const img = new Image();
       img.onload = function() {
-        // 画像の実サイズに合わせてcanvasサイズを設定
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
