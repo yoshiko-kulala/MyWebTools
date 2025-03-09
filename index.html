@@ -77,7 +77,7 @@ graph TD
       document.body.removeChild(downloadLink);
     }
     
-    // PNGダウンロード機能（data URL方式）
+    // PNGダウンロード機能（data URL方式＋スケールアップ）
     function downloadPNG() {
       const diagramDiv = document.getElementById('diagram');
       const svgElement = diagramDiv.querySelector('svg');
@@ -101,13 +101,37 @@ graph TD
       const imgSrc = 'data:image/svg+xml;base64,' + svgBase64;
       
       const img = new Image();
-      // data URLを使用するため、crossOriginは不要
       img.onload = function() {
+        // スケールファクターの設定（4倍に拡大）
+        const scale = 4;
+        let width = img.width;
+        let height = img.height;
+        
+        // SVG要素にwidth, heightまたはviewBoxが指定されている場合に取得
+        const attrWidth = svgElement.getAttribute('width');
+        const attrHeight = svgElement.getAttribute('height');
+        if (attrWidth && attrHeight) {
+          width = parseFloat(attrWidth);
+          height = parseFloat(attrHeight);
+        } else {
+          const viewBox = svgElement.getAttribute('viewBox');
+          if (viewBox) {
+            const parts = viewBox.split(' ');
+            if (parts.length === 4) {
+              width = parseFloat(parts[2]);
+              height = parseFloat(parts[3]);
+            }
+          }
+        }
+        
         const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
+        canvas.width = width * scale;
+        canvas.height = height * scale;
         const context = canvas.getContext('2d');
+        // scale()を使ってキャンバスの描画解像度を上げる
+        context.scale(scale, scale);
         context.drawImage(img, 0, 0);
+        
         canvas.toBlob(function(blob) {
           const downloadLink = document.createElement("a");
           downloadLink.href = URL.createObjectURL(blob);
