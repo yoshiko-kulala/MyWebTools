@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mermaid Diagram Generator</title>
+  <!-- Mermaidライブラリの読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-bottom: 10px;
+      font-family: monospace;
+    }
+    #diagram {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 8px 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mermaid Diagram Generator</h1>
+  <!-- Mermaidコード入力欄 -->
+  <textarea id="mermaidInput" placeholder="ここにMermaid形式のコードを入力してください">
+graph TD
+  A[Start] --> B{Is it?}
+  B -- Yes --> C[OK]
+  B -- No --> D[Not OK]
+  D --> E[End]
+  </textarea>
+  <br>
+  <!-- 更新ボタンとダウンロードボタン -->
+  <button id="updateBtn">グラフ更新</button>
+  <button id="downloadBtn">画像ダウンロード</button>
+  
+  <!-- グラフ表示用コンテナ -->
+  <div id="diagram"></div>
+  
+  <script>
+    // Mermaidの初期化（startOnLoad:falseにすることで明示的なレンダリングを行う）
+    mermaid.initialize({ startOnLoad: false });
+    
+    // MermaidコードからSVGを生成して表示する関数
+    function renderDiagram() {
+      const input = document.getElementById('mermaidInput').value;
+      // mermaidAPI.renderにより、指定のIDと入力コードからSVGコードを生成
+      mermaid.mermaidAPI.render('generatedDiagram', input, (svgCode) => {
+        document.getElementById('diagram').innerHTML = svgCode;
+      });
+    }
+    
+    // 「グラフ更新」ボタンにイベントを登録
+    document.getElementById('updateBtn').addEventListener('click', renderDiagram);
+    
+    // ※自動更新を希望する場合は、以下のコメントアウトを解除してinputイベントを監視してください
+    // document.getElementById('mermaidInput').addEventListener('input', renderDiagram);
+    
+    // SVG形式の画像をダウンロードするための関数
+    function downloadSVG() {
+      const diagramDiv = document.getElementById('diagram');
+      const svgElement = diagramDiv.querySelector('svg');
+      if (!svgElement) {
+        alert("グラフが生成されていません。");
+        return;
+      }
+      // SVG要素を文字列にシリアライズ
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svgElement);
+      
+      // 名前空間の追加（必要な場合）
+      if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+      }
+      
+      // XML宣言の追加
+      source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+      
+      // データURLに変換
+      const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+      
+      // 仮想リンクを生成してクリックイベントを発火
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.download = "diagram.svg";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+    
+    // 「画像ダウンロード」ボタンにイベントを登録
+    document.getElementById('downloadBtn').addEventListener('click', downloadSVG);
+    
+    // 初期表示用にレンダリング（任意）
+    renderDiagram();
+  </script>
+</body>
+</html>
