@@ -77,7 +77,7 @@ graph TD
       document.body.removeChild(downloadLink);
     }
     
-    // PNGダウンロード機能
+    // PNGダウンロード機能（data URL方式）
     function downloadPNG() {
       const diagramDiv = document.getElementById('diagram');
       const svgElement = diagramDiv.querySelector('svg');
@@ -96,17 +96,18 @@ graph TD
       }
       svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString;
       
-      // SVGデータをBlobに変換
-      const svgBlob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
-      const url = URL.createObjectURL(svgBlob);
+      // Base64エンコードしたdata URLを生成
+      const svgBase64 = btoa(unescape(encodeURIComponent(svgString)));
+      const imgSrc = 'data:image/svg+xml;base64,' + svgBase64;
+      
       const img = new Image();
+      // data URLを使用するため、crossOriginは不要
       img.onload = function() {
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
         const context = canvas.getContext('2d');
         context.drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
         canvas.toBlob(function(blob) {
           const downloadLink = document.createElement("a");
           downloadLink.href = URL.createObjectURL(blob);
@@ -119,7 +120,7 @@ graph TD
       img.onerror = function() {
         alert("PNG画像の生成に失敗しました。");
       };
-      img.src = url;
+      img.src = imgSrc;
     }
     
     // 各ダウンロードボタンにイベントを登録
