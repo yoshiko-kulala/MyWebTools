@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mermaid Diagram Generator</title>
-  <!-- バージョン指定したMermaidライブラリの読み込み例 -->
+  <!-- バージョン指定したMermaidライブラリの読み込み -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -33,7 +33,7 @@ graph TD
   <div id="diagram"></div>
   
   <script>
-    // Mermaidの初期化（securityLevel: 'loose'を追加）
+    // Mermaidの初期化（securityLevel: 'loose'も設定）
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'loose'
@@ -42,9 +42,11 @@ graph TD
     // MermaidコードからSVGを生成して表示する関数
     function renderDiagram() {
       const input = document.getElementById('mermaidInput').value;
+      const container = document.getElementById('diagram');
+      // containerパラメータを追加して呼び出す
       mermaid.mermaidAPI.render('generatedDiagram', input, function(svgCode) {
-        document.getElementById('diagram').innerHTML = svgCode;
-      });
+        container.innerHTML = svgCode;
+      }, container);
     }
     
     // イベントリスナーの登録
@@ -52,15 +54,14 @@ graph TD
     
     // SVGダウンロード機能
     function downloadSVG() {
-      const diagramDiv = document.getElementById('diagram');
-      const svgElement = diagramDiv.querySelector('svg');
+      const container = document.getElementById('diagram');
+      const svgElement = container.querySelector('svg');
       if (!svgElement) {
         alert("グラフが生成されていません。");
         return;
       }
       const serializer = new XMLSerializer();
       let source = serializer.serializeToString(svgElement);
-      // 名前空間の追加
       if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
         source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
       }
@@ -79,15 +80,14 @@ graph TD
     
     // PNGダウンロード機能
     function downloadPNG() {
-      const diagramDiv = document.getElementById('diagram');
-      const svgElement = diagramDiv.querySelector('svg');
+      const container = document.getElementById('diagram');
+      const svgElement = container.querySelector('svg');
       if (!svgElement) {
         alert("グラフが生成されていません。");
         return;
       }
       const serializer = new XMLSerializer();
       let svgString = serializer.serializeToString(svgElement);
-      // 名前空間の追加
       if (!svgString.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
         svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
       }
@@ -96,7 +96,6 @@ graph TD
       }
       svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString;
       
-      // SVGデータをBlobに変換
       const svgBlob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
       const url = URL.createObjectURL(svgBlob);
       const img = new Image();
@@ -122,7 +121,7 @@ graph TD
       img.src = url;
     }
     
-    // 各ダウンロードボタンにイベントを登録
+    // ダウンロードボタンのイベント登録
     document.getElementById('downloadSVGBtn').addEventListener('click', downloadSVG);
     document.getElementById('downloadPNGBtn').addEventListener('click', downloadPNG);
     
