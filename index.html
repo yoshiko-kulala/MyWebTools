@@ -39,14 +39,12 @@ graph TD
       securityLevel: 'loose'
     });
     
-    // MermaidコードからSVGを生成して表示する関数
+    // MermaidコードからSVGを生成して表示する関数（containerパラメータは渡さず、コールバックで出力）
     function renderDiagram() {
       const input = document.getElementById('mermaidInput').value;
-      const container = document.getElementById('diagram');
-      // containerパラメータを追加して呼び出す
       mermaid.mermaidAPI.render('generatedDiagram', input, function(svgCode) {
-        container.innerHTML = svgCode;
-      }, container);
+        document.getElementById('diagram').innerHTML = svgCode;
+      });
     }
     
     // イベントリスナーの登録
@@ -62,6 +60,7 @@ graph TD
       }
       const serializer = new XMLSerializer();
       let source = serializer.serializeToString(svgElement);
+      // 必要な名前空間の確認と追加
       if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
         source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
       }
@@ -121,7 +120,7 @@ graph TD
       img.src = url;
     }
     
-    // ダウンロードボタンのイベント登録
+    // 各ダウンロードボタンにイベントを登録
     document.getElementById('downloadSVGBtn').addEventListener('click', downloadSVG);
     document.getElementById('downloadPNGBtn').addEventListener('click', downloadPNG);
     
