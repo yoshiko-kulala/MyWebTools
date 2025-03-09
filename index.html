@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mermaid Diagram Generator</title>
-  <!-- バージョン指定したMermaidライブラリの読み込み -->
+  <!-- Mermaidライブラリの読み込み（バージョン指定） -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -33,18 +33,20 @@ graph TD
   <div id="diagram"></div>
   
   <script>
-    // Mermaidの初期化（securityLevel: 'loose'も設定）
+    // Mermaidの初期化（securityLevel: 'loose' を設定）
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'loose'
     });
     
-    // MermaidコードからSVGを生成して表示する関数（containerパラメータは渡さず、コールバックで出力）
+    // Mermaidコードを読み込み、.mermaid 要素としてコンテナに挿入し、mermaid.init でレンダリングする関数
     function renderDiagram() {
       const input = document.getElementById('mermaidInput').value;
-      mermaid.mermaidAPI.render('generatedDiagram', input, function(svgCode) {
-        document.getElementById('diagram').innerHTML = svgCode;
-      });
+      const container = document.getElementById('diagram');
+      // 以前のグラフをクリアし、.mermaidクラスのdivにコードをセット
+      container.innerHTML = '<div class="mermaid">' + input + '</div>';
+      // mermaid.init を使ってレンダリング
+      mermaid.init(undefined, container);
     }
     
     // イベントリスナーの登録
@@ -60,7 +62,7 @@ graph TD
       }
       const serializer = new XMLSerializer();
       let source = serializer.serializeToString(svgElement);
-      // 必要な名前空間の確認と追加
+      // 必要な名前空間の追加
       if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
         source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
       }
@@ -120,11 +122,11 @@ graph TD
       img.src = url;
     }
     
-    // 各ダウンロードボタンにイベントを登録
+    // ダウンロードボタンのイベント登録
     document.getElementById('downloadSVGBtn').addEventListener('click', downloadSVG);
     document.getElementById('downloadPNGBtn').addEventListener('click', downloadPNG);
     
-    // 初期レンダリング（任意）
+    // 初期レンダリング
     renderDiagram();
   </script>
 </body>
